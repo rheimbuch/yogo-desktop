@@ -1,0 +1,3 @@
+[submodule "Resources/yogo"]
+	path = Resources/yogo
+	url = git@github.com:yogo/yogo.git
