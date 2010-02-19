@@ -43,16 +43,6 @@ ServerStoppingStatus    = "ServerStoppingStatus";
             [self didChangeValueForKey: "status"];
         });
         
-        Titanium.UI.getCurrentWindow().addEventListener(Titanium.CLOSE, function(e)
-        {
-            e.preventDefault();
-            Titanium.API.debug("Shutting down server...");
-            process.setOnExit(function(){
-                Titanium.App.exit();
-            });
-            process.terminate();
-            
-        });
     }
     return self;
 }
