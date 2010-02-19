@@ -53,6 +53,11 @@ var YogoLocalURL = "http://localhost:3000";
                     options:CPKeyValueObservingOptionNew
                     context:nil];
     
+    Titanium.addEventListener(Titanium.EXIT, function(e)
+    {
+        Titanium.API.info("Shutting down servers...");
+        [self stop];
+    });
     
     [self start];
 }
