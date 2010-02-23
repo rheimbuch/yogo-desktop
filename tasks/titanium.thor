@@ -1,11 +1,9 @@
-TITANIUM = {
-  'root' => {
-  'osx' => ['/Library/Application\ Support/Titanium/', '~/Library/Application\ Support/Titanium/'],
-  'win32' => ['C:\ProgramData\Titanium']
-  }
-}
+
 class Titanium < Thor
   DEFAULT_VERSION = '0.8.1'
+  class TitaniumInstallNotFoundError < StandardError; end
+  class TitaniumSDKNotFoundError < StandardError; end
+  class TitaniumBuildScriptNotFoundError < StandardError; end
   include Thor::Actions
   
   class_option :version, :type => :string, :default => (ENV['TITANIUM_VERSION'] || DEFAULT_VERSION)
@@ -36,15 +34,43 @@ class Titanium < Thor
     
     options.freeze
     
-    raise "Titanium Install not found at #{options[:install]}" unless File.exist? options[:install]
-    raise "Titanium sdk not found at #{options[:sdk]}" unless File.exist? options[:sdk]
-    raise "tibuild.py script not found: #{options[:build_script]}" unless File.exist? options[:build_script]
+    @missing = {}
+    @missing[:install] = options[:install] unless File.exist? options[:install]
+    @missing[:sdk] = options[:sdk] unless File.exist? options[:sdk]
+    @missing[:build_script] = options[:build_script] unless File.exist? options[:sdk]
+  end
+  
+  no_tasks do
+    def check_titanium_install
+      raise TitaniumInstallNotFoundError, @missing[:install] if @missing[:install]
+      raise TitaniumSDKNotFoundError, @missing[:sdk] if @missing[:sdk]
+      raise TitaniumBuildScriptNotFoundError, @missing[:build_script] if @missing[:build_script]
+    end
+  end
+  
+  desc "check", "check for the titanium sdk"
+  def check
+    bail = false
+    begin
+      check_titanium_install
+    rescue TitaniumInstallNotFoundError => e
+      puts "Could not find Titanium install at #{e.message}"
+      bail = true
+    rescue TitaniumSDKNotFoundError => e
+      puts "Could not find Titanium SDK at #{e.message}"
+      bail = true
+    rescue TitaniumBuildScriptNotFoundError => e
+      puts "Could not find the Titanium build script at #{e.message}"
+      bail = true
+    end
     
+    exit 1 if bail
   end
   
   desc "build", "build the titanium app for the current platform"
   def build(project)
     # run '/Library/Application\ Support/Titanium/sdk/osx/0.8.1/tibuild.py -d dist/osx -s /Library/Application\ Support/Titanium -a /Library/Application\ Support/Titanium/sdk/osx/0.8.1 .'
+    invoke :check
     run %{"#{options[:build_script]}" -d "#{options[:destination]}" -s "#{options[:install]}" -a "#{options[:sdk]}" "#{project}"}
   end
 end
