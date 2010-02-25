@@ -12,13 +12,14 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     id          startLineRegex;
 }
 
-- (id)initWithArgs:(CPArray)args withStartLine:(CPString)regex
+- (id)initWithArgs:(CPArray)args withEnvironment:(JSObject)env withStartLine:(CPString)regex
 {
     self = [super init];
     if(self)
     {
         process = Titanium.Process.createProcess({
-            'args': args
+            'args': args,
+            'env': env
         });
         startLineRegex = new RegExp(regex);
         status = ServerStoppedStatus
@@ -47,9 +48,19 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     return self;
 }
 
+- (id)initWithArgs(CPArray)args withEnvironment:(JSObject)env
+{
+    return [self initWithArgs:args withEnvironment:env withStartLine:"^.*$"];
+}
+
+- (id)initWithArgs:(CPArray)args withStartLine:(CPString)regex
+{
+    return [self initWithArgs:args withEnvironment:{} withStartLine:regex];
+}
+
 - (id)initWithArgs:(CPArray)args
 {
-    return [self initWithArgs:args withStartLine:"^.*$"]
+    return [self initWithArgs:args withStartLine:"^.*$"];
 }
 
 - (void)start
