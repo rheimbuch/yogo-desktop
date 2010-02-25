@@ -1,4 +1,5 @@
 @import <Foundation/CPObject.j>
+@import <Foundation/CPNotificationCenter.j>
 
 ServerStoppedStatus     = "ServerStoppedStatus";
 ServerStartingStatus    = "ServerStartingStatus";
@@ -34,6 +35,9 @@ ServerStoppingStatus    = "ServerStoppingStatus";
                     [self willChangeValueForKey: "status"];
                     status = ServerStartedStatus
                     [self didChangeValueForKey: "status"];
+                    [[CPNotificationCenter defaultCenter]
+                        postNotificationName:ServerStartedStatus
+                        object:self];
                 }
             }
         });
@@ -42,6 +46,9 @@ ServerStoppingStatus    = "ServerStoppingStatus";
             [self willChangeValueForKey: "status"];
             status = ServerStoppedStatus;
             [self didChangeValueForKey: "status"];
+            [[CPNotificationCenter defaultCenter]
+                postNotificationName:ServerStoppedStatus
+                object:self];
         });
         
     }
@@ -72,6 +79,9 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     [self willChangeValueForKey: "status"]
     status = ServerStartingStatus;
     [self didChangeValueForKey: "status"];
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:ServerStartingStatus
+        object:self];
     
 }
 
@@ -85,7 +95,9 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     [self willChangeValueForKey: "status"];
     status = ServerStoppingStatus;
     [self didChangeValueForKey: "status"];
-    
+    [[CPNotificationCenter defaultCenter]
+        postNotificationName:ServerStoppingStatus
+        object:self];
     
 }
 
