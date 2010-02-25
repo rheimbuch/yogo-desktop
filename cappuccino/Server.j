@@ -18,6 +18,8 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     self = [super init];
     if(self)
     {
+        Titanium.API.debug("Creating Process:");
+        Titanium.API.debug(args);
         process = Titanium.Process.createProcess({
             'args': args,
             'env': env
