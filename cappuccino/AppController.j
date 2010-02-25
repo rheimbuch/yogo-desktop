@@ -9,59 +9,51 @@
 @import <Foundation/CPObject.j>
 @import <AppKit/CPWebView.j>
 @import <AppKit/CPToolbar.j>
+@import "YogoProcessManager.j"
 @import "Server.j"
 
 var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
-var YogoLocalURL = "http://localhost:3000",
-    YogoProjectsURL = YogoLocalURL + "/projects",
-    YogoProjectsCreateURL = YogoProjectsURL + "/new";
 
 @implementation AppController : CPObject
 {
-    CPWindow    theWindow; //this "outlet" is connected automatically by the Cib
-    CPWebView   browser;
-    CPToolbar   defaultToolbar;
-    Server      railsServer;
-    Server      persvrServer;
-    int         serverCount;
+    CPWindow            theWindow; //this "outlet" is connected automatically by the Cib
+    CPWebView           browser;
+    CPToolbar           defaultToolbar;
+    YogoProcessManager  processManager;
 }
+
+
 
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
+    mainAppController = self;
+    Titanium.API.debug("Cappuccino framework loaded...");
+    Titanium.API.debug("Setting up toolbar");
     defaultToolbar = [[CPToolbar alloc] initWithIdentifier: DefaultToolbarIdentifier];
     [defaultToolbar setDelegate: self];
     [defaultToolbar setVisible: YES];
     [theWindow setToolbar: defaultToolbar];
     
     [browser setMainFrameURL:"Resources/launching.html"];
-    serverCount = 0;
     
-    var persvrCmd = [ Titanium.App.appURLToPath("app://persevere/bin/" + (Titanium.getPlatform() == 'win32' ? "persvr.bat" : "persvr") )];
-    persvrCmd.push("-r")
-    persvrCmd.push(Titanium.App.appURLToPath("app://persevere"));
-    persvrServer = [[Server alloc] initWithArgs:persvrCmd 
-                                   withStartLine:"Started SelectChannelConnector@0.0.0.0:([0-9]+)"];
+    processManager = [[YogoProcessManager alloc] init];
     
-    var railsCmd = ['java', '-jar', Titanium.App.appURLToPath("app://jruby-complete-1.4.0.jar"), Titanium.App.appURLToPath("app://yogo/script/server"), '-e', 'production'];
-    railsServer = [[Server alloc] initWithArgs:railsCmd
-                                  withStartLine:"WEBrick::HTTPServer#start: pid=([0-9]+) port=([0-9]+)" ]
-                                  
-    [persvrServer addObserver:self
-                    forKeyPath:"status"
-                    options:CPKeyValueObservingOptionNew
-                    context:nil];
-    [railsServer addObserver:self
-                    forKeyPath:"status"
-                    options:CPKeyValueObservingOptionNew
-                    context:nil];
+    // Get notified when processManager has finished starting servers
+    [[CPNotificationCenter defaultCenter] addObserver:self
+            selector:@selector(yogoServersStarted:)
+            name:YogoProcessesStartedNotification
+            object:processManager];
     
-    Titanium.addEventListener(Titanium.EXIT, function(e)
+    // Hook into Titanium exit and cleanup server processes
+    Titanium.addEventListener(Titanium.APP_EXIT, function(e)
     {
-        Titanium.API.info("Shutting down servers...");
-        [self stop];
+        Titanium.API.info("Exiting YogoApp...");
+        Titanium.API.debug(arguments);
+        [processManager stopAll];
     });
-    
-    [self start];
+            
+    Titanium.API.debug("About to start servers...");
+    [processManager startAll];
 }
 
 - (void)awakeFromCib
@@ -74,57 +66,37 @@ var YogoLocalURL = "http://localhost:3000",
     [theWindow setFullBridge:YES];
 }
 
-- (void)start
+/**
+ * Returns the full server url for the Yogo resource
+ */
+- (CPString)yogoURL:(CPString)path
 {
-    [persvrServer start];
-    
+    var url = "http://localhost:" + [processManager railsPort];
+    if(path[0] === "/")
+        return url + path;
+    else
+        return url + "/" + path;
 }
 
-- (void)stop
-{
-    [railsServer stop];
-    [persvrServer stop];
-}
 
 - (void)goToYogoHome
 {
-    [browser setMainFrameURL:YogoLocalURL];
+    [browser setMainFrameURL:[self yogoURL:'/']];
 }
 
 - (void)goToProjects
 {
-    [browser setMainFrameURL:YogoProjectsURL];
+    [browser setMainFrameURL:[self yogoURL:'/projects']];
 }
 
 - (void)goToCreateProject
 {
-    [browser setMainFrameURL:YogoProjectsCreateURL];
+    [browser setMainFrameURL:[self yogoURL:'/projects/new']];
 }
 
-- (void)observeValueForKeyPath:(CPString)keyPath
-            ofObject:(id)object
-            change:(CPDictionary)change
-            context:(id)context
+- (void)yogoServersStarted:(CPNotification)notification
 {
-    if(keyPath === "status")
-    {
-        if([object status] === ServerStartedStatus)
-        {
-            serverCount += 1;
-        }
-        else if([object status] === ServerStoppedStatus)
-            serverCount -= 1;
-            
-        if(object === persvrServer && [persvrServer status] === ServerStartedStatus)
-        {
-            [railsServer start];
-        }
-        
-        if(object === railsServer && [railsServer status] === ServerStartedStatus)
-        {
-            [self goToYogoHome];
-        }
-    }
+    [self goToYogoHome];
 }
 
 @end
