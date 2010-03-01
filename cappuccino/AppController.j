@@ -27,8 +27,8 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     mainAppController = self;
-    Titanium.API.debug("Cappuccino framework loaded...");
-    Titanium.API.debug("Setting up toolbar");
+    CPLog("Cappuccino framework loaded...");
+    CPLog("Setting up toolbar");
     defaultToolbar = [[CPToolbar alloc] initWithIdentifier: DefaultToolbarIdentifier];
     [defaultToolbar setDelegate: self];
     [defaultToolbar setVisible: YES];
@@ -47,12 +47,11 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
     // Hook into Titanium exit and cleanup server processes
     Titanium.addEventListener(Titanium.APP_EXIT, function(e)
     {
-        Titanium.API.info("Exiting YogoApp...");
-        Titanium.API.debug(arguments);
+        CPLog("Exiting YogoApp...");
         [processManager stopAll];
     });
             
-    Titanium.API.debug("About to start servers...");
+    CPLog("About to start servers...");
     [processManager startAll];
 }
 

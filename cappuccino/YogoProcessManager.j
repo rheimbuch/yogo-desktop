@@ -23,27 +23,27 @@ YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
     {
         databaseSeeded = false;
     
-        Titanium.API.debug("Finding open ports...");
+        CPLog("Finding open ports...");
         persvrPort = [self availablePort];
-        Titanium.API.debug("Persevere port = " + persvrPort);
+        CPLog("Persevere port = " + persvrPort);
     
         var persvrCmd = [ Titanium.App.appURLToPath("app://persevere/bin/" + (Titanium.getPlatform() == 'win32' ? "persvr.bat" : "persvr") )];
         persvrCmd.push("-r", Titanium.App.appURLToPath("app://persevere"));
         persvrCmd.push("-p", persvrPort);
-        Titanium.API.debug("persvrCmd = " + persvrCmd);
+        CPLog("persvrCmd = " + persvrCmd);
         persvrServer = [[Server alloc] initWithArgs:persvrCmd 
                                        withStartLine:"Started SelectChannelConnector@0.0.0.0:([0-9]+)"];
     
     
         railsPort = [self availablePort];
-        Titanium.API.debug("Rails port = " + railsPort);
+        CPLog("Rails port = " + railsPort);
     
     
         var railsCmd = [];
         railsCmd.push('java', '-jar', Titanium.App.appURLToPath("app://jruby-complete-1.4.0.jar"));
         railsCmd.push(Titanium.App.appURLToPath("app://yogo/script/server"), '-e', 'production');
         railsCmd.push('-p', railsPort);
-        Titanium.API.debug("railsCmd = " + railsCmd);
+        CPLog("railsCmd = " + railsCmd);
         railsServer = [[Server alloc] initWithArgs:railsCmd
                                       withEnvironment:{
                                           'PERSVR_PORT':persvrPort
@@ -104,6 +104,7 @@ YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
 - (void)railsServerStarted:(CPNotification)notification
 {
     // Rails Server Started
+    CPLog.debug('Recieved the ServerStartedStatus notification from railsServer!');
     [[CPNotificationCenter defaultCenter]
         postNotificationName:YogoProcessesStartedNotification
         object:self];
@@ -136,7 +137,6 @@ YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
             foundPort = true;
         sock.close();
     }
-    console.debug("Found open port: " + port);
     return port.toString();
 }
 
@@ -152,7 +152,7 @@ YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
                 object:self];
     };
     
-    Titanium.API.debug("Checking to see if yogo db needs to be seeded...")
+    CPLog("Checking to see if yogo db needs to be seeded...")
     var TFile = Titanium.Filesystem;
     var yogoDbSeeded = TFile.getFile(TFile.getResourcesDirectory(), 'yogo_db_seeded');
     if(!yogoDbSeeded.exists())
@@ -169,16 +169,16 @@ YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
             }
         })
         dbSeed.setOnExit(function(){
-            Titanium.API.debug("Finished seeding yogo db!")
+            CPLog("Finished seeding yogo db!")
             yogoDbSeeded.write(Date.now());
             indicateDatabaseIsSeeded();
         });
-        Titanium.API.debug("Seeding yogo db!");
+        CPLog("Seeding yogo db!");
         dbSeed.launch();
     }
     else
     {
-        Titanium.API.debug("Yogo db already seeded!");
+        CPLog("Yogo db already seeded!");
         indicateDatabaseIsSeeded();
     }
 }

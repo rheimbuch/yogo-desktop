@@ -18,8 +18,8 @@ ServerStoppingStatus    = "ServerStoppingStatus";
     self = [super init];
     if(self)
     {
-        Titanium.API.debug("Creating Process:");
-        Titanium.API.debug(args);
+        CPLog.debug("Creating Process:");
+        CPLog.debug(args);
         process = Titanium.Process.createProcess({
             'args': args,
             'env': env
@@ -29,14 +29,16 @@ ServerStoppingStatus    = "ServerStoppingStatus";
         
         process.setOnReadLine(function(line)
         {
-            Titanium.API.debug(line);
+            CPLog(line);
             if(status != ServerStartedStatus)
             {
                 if(startLineRegex.test(line))
                 {
+                    CPLog.debug('About to change the server status to runnin!')
                     [self willChangeValueForKey: "status"];
                     status = ServerStartedStatus
                     [self didChangeValueForKey: "status"];
+                    CPLog.debug("Server Status = " + status);
                     [[CPNotificationCenter defaultCenter]
                         postNotificationName:ServerStartedStatus
                         object:self];
