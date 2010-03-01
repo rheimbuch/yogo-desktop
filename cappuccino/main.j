@@ -10,9 +10,10 @@
 @import <AppKit/AppKit.j>
 
 @import "AppController.j"
-
+@import "MultiLogger.j"
 
 function main(args, namedArgs)
 {
+    CPLogRegister(MultiLogger(CPLogConsole));
     CPApplicationMain(args, namedArgs);
 }
