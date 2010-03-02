@@ -16,7 +16,7 @@ var ENV = require("system").env,
 app ("capp", function(task)
 {
     task.setBuildIntermediatesPath(FILE.join("Build", "capp.build", configuration));
-    task.setBuildPath(FILE.join("..","Resources"));
+    task.setBuildPath(FILE.join("Build"));
 
     task.setProductName("yogo_app");
     task.setIdentifier("edu.montana.cns.yogo");
