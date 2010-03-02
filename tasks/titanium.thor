@@ -1,4 +1,4 @@
-
+require 'thor'
 class Titanium < Thor
   DEFAULT_VERSION = '0.8.1'
   class TitaniumInstallNotFoundError < StandardError; end
