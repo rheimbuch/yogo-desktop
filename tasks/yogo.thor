@@ -1,3 +1,4 @@
+require 'thor'
 require 'fileutils'
 module Yogo
   class Build < Thor
@@ -10,7 +11,7 @@ module Yogo
                  :banner => "git repo url"
     class_option :branch, :type => :string, :group => :git, 
                  :aliases => "-b", :banner => "branch | tag | commit"
-    class_option :shallow, :type => :boolean, :group => :git, :default => false
+    # class_option :shallow, :type => :boolean, :group => :git, :default => false
     
     class_option :environment, :type => :string, :group => :rails, 
                  :default => "development", :aliases => "-e", 
@@ -26,7 +27,7 @@ module Yogo
       case options[:type]
       when "package"
         options[:environment] = 'production'
-        options[:shallow] = true
+        # options[:shallow] = true
       when "development"
         options[:environment] ||= 'development'
       else
@@ -43,7 +44,7 @@ module Yogo
       invoke :submodules
       invoke :gems
       invoke :db_config
-      invoke :db_seed
+      # invoke :db_seed
     end
     
   
@@ -51,12 +52,13 @@ module Yogo
     def checkout
       inside path do
         clone = ["git clone"]
-        clone << "--reference #{options[:branch]}" if options[:branch]
-        clone << "--depth 1" if options[:shallow]
+        # clone << "--branch #{options[:branch]}" if options[:branch]
+        # clone << "--depth 1" if options[:shallow]
         clone << options[:repo]
         clone << '.'
         
         run clone.join(' ')
+        run "git checkout #{options[:branch]}" if options[:branch]
       end
     end
     
@@ -100,19 +102,27 @@ FILES['database.yml'] = <<-DATABASE
 #
 # License -> see license.txt
 #
+# FILE: database.yml.start
 # 
 #
 development: 
-  adapter: sqlite3
-  database: <%= File.join(RAILS_ROOT, 'db/development.sqlite3') %>
-
-test:
-  adapter: sqlite3
-  database: <%= File.join(RAILS_ROOT, 'db/test.sqlite3') %>
+  adapter: persevere
+  host: localhost
+  port: <%= ENV['PERSVR_PORT'] || 8080 %>
 
 production:
-  adapter: sqlite3
-  database: <%= File.join(RAILS_ROOT, 'db/production.sqlite3') %>
+  adapter: persevere
+  host: localhost
+  port: <%= ENV['PERSVR_PORT'] || 8080 %>
+
+# run with bin/persvr -p 8081
+test: &TEST
+  adapter: persevere
+  host: localhost
+  port: <%= ENV['PERSVR_PORT'] || 8081 %>
+
+cucumber:
+  <<: *TEST
 
 #
 # Example Data Repository
@@ -120,26 +130,5 @@ production:
 example:
   adapter: sqlite3
   database: <%= File.join(RAILS_ROOT, 'db/example/example.sqlite3') %>
-
-# Persevere 1.0 beta
-#  gem install persevere
-#  gem install dm-persevere-adapter
-yogo_development:
-  adapter: persevere
-  host: localhost
-  port: 8080
-
-yogo_production:
-  adapter: persevere
-  host: localhost
-  port: 8080
-
-#
-# run with bin/persvr -p 8081
-#
-yogo_test:
-  adapter: persevere
-  host: localhost
-  port: 8080
 DATABASE
 end
