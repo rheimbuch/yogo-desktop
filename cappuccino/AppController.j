@@ -10,6 +10,7 @@
 @import <AppKit/CPWebView.j>
 @import <AppKit/CPToolbar.j>
 @import "YogoProcessManager.j"
+@import "YogoViewController.j"
 @import "Server.j"
 
 var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
@@ -17,8 +18,8 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
 @implementation AppController : CPObject
 {
     CPWindow            theWindow; //this "outlet" is connected automatically by the Cib
-    CPWebView           browser;
     CPToolbar           defaultToolbar;
+    YogoViewController  mainViewController;
     YogoProcessManager  processManager;
 }
 
@@ -34,8 +35,6 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
     [defaultToolbar setVisible: YES];
     [theWindow setToolbar: defaultToolbar];
     
-    [browser setMainFrameURL:"Resources/launching.html"];
-    
     processManager = [[YogoProcessManager alloc] init];
     
     // Get notified when processManager has finished starting servers
@@ -43,6 +42,17 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
             selector:@selector(yogoServersStarted:)
             name:YogoProcessesStartedNotification
             object:processManager];
+    
+    mainViewController = [[YogoViewController alloc] initWithProcessManager:processManager];
+    [mainViewController setLoading:true];
+    [[mainViewController view] setFrame:[[theWindow contentView] bounds]];
+    [[theWindow contentView] addSubview:[mainViewController view]];
+    
+    // [mainViewController setUrl:"Resources/launching.html"];
+    
+    vc = mainViewController;
+    pm = processManager;
+    
     
     // Hook into Titanium exit and cleanup server processes
     Titanium.addEventListener(Titanium.APP_EXIT, function(e)
@@ -80,21 +90,22 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
 
 - (void)goToYogoHome
 {
-    [browser setMainFrameURL:[self yogoURL:'/']];
+    [mainViewController setUrl:[self yogoURL:'/']];
 }
 
 - (void)goToProjects
 {
-    [browser setMainFrameURL:[self yogoURL:'/projects']];
+    [mainViewController setUrl:[self yogoURL:'/projects']];
 }
 
 - (void)goToCreateProject
 {
-    [browser setMainFrameURL:[self yogoURL:'/projects/new']];
+    [mainViewController setUrl:[self yogoURL:'/projects/new']];
 }
 
 - (void)yogoServersStarted:(CPNotification)notification
 {
+    [mainViewController setLoading:false];
     [self goToYogoHome];
 }
 
