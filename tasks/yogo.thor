@@ -77,6 +77,8 @@ module Yogo
         run "gem bundle"
         if(options[:type] == "package")
           rm_rf Dir['vendor/bundled/**/cache/*.gem'] # Clear out cached gems before packaging
+          rm_rf Dir['vendor/bundled/**/gems/selenium-client*'] # Clear out large testing gems
+          rm_rf Dir['vendor/bundled/**/gems/webrat*']
         end
       end
     end
