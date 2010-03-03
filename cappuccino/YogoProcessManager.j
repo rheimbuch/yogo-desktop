@@ -265,18 +265,33 @@ var ProgressMax = 100;
         dbSeedCmd.push('java', '-jar', Titanium.App.appURLToPath("app://jruby-complete-1.4.0.jar"));
         dbSeedCmd.push('-S', 'rake', '-f', Titanium.App.appURLToPath("app://yogo/Rakefile"));
         dbSeedCmd.push('db:seed');
+        dbSeedCmd.push('--trace');
+        
         var dbSeed = Titanium.Process.createProcess({
             args:dbSeedCmd,
             env: {
                 'RAILS_ENV':'production',
                 'PERSVR_PORT':persvrPort
             }
-        })
+        });
+        
+        dbSeed.setOnReadLine(function(line){
+            CPLog(line);
+        });
+        
         [self incrementProgress];
+        
         dbSeed.setOnExit(function(){
-            CPLog("Finished seeding yogo db!")
-            yogoDbSeeded.write(Date.now());
-            indicateDatabaseIsSeeded();
+            if(dbSeed.getExitCode() === 0)
+            {
+                CPLog("Finished seeding yogo db!")
+                yogoDbSeeded.write(Date.now());
+                indicateDatabaseIsSeeded();
+            }
+            else
+            {
+                CPLog.fatal("Seeding the Database Failed!");
+            }
         });
         CPLog("Seeding yogo db!");
         [self setMessage:"Loading Initial Data..."];
