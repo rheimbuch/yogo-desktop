@@ -6,6 +6,8 @@ ServerStartingStatus    = "ServerStartingStatus";
 ServerStartedStatus     = "ServerStartedStatus";
 ServerStoppingStatus    = "ServerStoppingStatus";
 
+ServerConsoleOutputNotification = "ServerConsoleOutputNotification";
+
 @implementation Server : CPObject
 {
     JSObject    process;
@@ -30,6 +32,13 @@ ServerStoppingStatus    = "ServerStoppingStatus";
         process.setOnReadLine(function(line)
         {
             CPLog(line);
+            [[CPNotificationCenter defaultCenter]
+                postNotificationName:ServerConsoleOutputNotification
+                object:self
+                userInfo:[CPDictionary dictionaryWithJSObject:{
+                    line:line
+                }]];
+                
             if(status != ServerStartedStatus)
             {
                 if(startLineRegex.test(line))
@@ -39,6 +48,7 @@ ServerStoppingStatus    = "ServerStoppingStatus";
                     status = ServerStartedStatus
                     [self didChangeValueForKey: "status"];
                     CPLog.debug("Server Status = " + status);
+                    
                     [[CPNotificationCenter defaultCenter]
                         postNotificationName:ServerStartedStatus
                         object:self];
