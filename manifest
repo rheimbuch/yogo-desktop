@@ -1,9 +1,9 @@
-#appname:YogoApp
-#appid:edu.montana.cns.yogo
+#appname:YogoDesktop
+#appid:edu.montana.cns.yogo-desktop
 #publisher:ryan
-#image:default_app_logo.png
-#url:yogo.cns.montana.edu
-#guid:db19887d-2a17-4da9-b27a-d99496816e5b
+#image:Yogo_small_trans.png
+#url:edu.montana.cns.yogo
+#guid:a62d3112-feaa-4a73-9eb8-34be33476962
 #desc:No description provided
 #type:desktop
 runtime:0.8.4
