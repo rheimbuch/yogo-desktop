@@ -47,7 +47,7 @@ namespace :yogo do
 end
 
 TITANIUM_PATH = ENV['TITANIUM_PATH'] || '/Library/Application\ Support/Titanium'
-TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || '0.8.4'
+TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || '0.8.5'
 TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || 'osx'
 sdk = File.join(TITANIUM_PATH, 'sdk', TITANIUM_PLATFORM, TITANIUM_VERSION)
 build_script = File.join(sdk, 'tibuild.py')
