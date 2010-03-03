@@ -24,31 +24,16 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
 }
 
 
-
 - (void)applicationDidFinishLaunching:(CPNotification)aNotification
 {
     mainAppController = self;
-    CPLog("Cappuccino framework loaded...");
-    CPLog("Setting up toolbar");
-    defaultToolbar = [[CPToolbar alloc] initWithIdentifier: DefaultToolbarIdentifier];
-    [defaultToolbar setDelegate: self];
-    [defaultToolbar setVisible: YES];
-    [theWindow setToolbar: defaultToolbar];
     
     processManager = [[YogoProcessManager alloc] init];
-    
-    // Get notified when processManager has finished starting servers
-    [[CPNotificationCenter defaultCenter] addObserver:self
-            selector:@selector(yogoServersStarted:)
-            name:YogoProcessesStartedNotification
-            object:processManager];
+
     
     mainViewController = [[YogoViewController alloc] initWithProcessManager:processManager];
-    [mainViewController setLoading:true];
     [[mainViewController view] setFrame:[[theWindow contentView] bounds]];
     [[theWindow contentView] addSubview:[mainViewController view]];
-    
-    // [mainViewController setUrl:"Resources/launching.html"];
     
     vc = mainViewController;
     pm = processManager;
@@ -75,101 +60,4 @@ var DefaultToolbarIdentifier = "DefaultToolbarIdentifier";
     [theWindow setFullBridge:YES];
 }
 
-/**
- * Returns the full server url for the Yogo resource
- */
-- (CPString)yogoURL:(CPString)path
-{
-    var url = "http://localhost:" + [processManager railsPort];
-    if(path[0] === "/")
-        return url + path;
-    else
-        return url + "/" + path;
-}
-
-
-- (void)goToYogoHome
-{
-    [mainViewController setUrl:[self yogoURL:'/']];
-}
-
-- (void)goToProjects
-{
-    [mainViewController setUrl:[self yogoURL:'/projects']];
-}
-
-- (void)goToCreateProject
-{
-    [mainViewController setUrl:[self yogoURL:'/projects/new']];
-}
-
-- (void)yogoServersStarted:(CPNotification)notification
-{
-    [mainViewController setLoading:false];
-    [self goToYogoHome];
-}
-
-@end
-
-var HomeToolbarItemIdentifier = "HomeToolbarItemIdentifier",
-    ProjectsToolbarItemIdentifier = "ProjectsToolbarItemIdentifier",
-    NewProjectToolbarItemIdentifier = "NewProjectToolbarItemIdentifier";
-
-@implementation AppController (ToolbarDelegate)
-- (CPArray)toolbarAllowedItemIdentifiers:(CPToolbar)aToolbar {
- 
-    return [CPToolbarSeparatorItemIdentifier, 
-            CPToolbarFlexibleSpaceItemIdentifier, 
-            CPToolbarSpaceItemIdentifier, 
-            ProjectsToolbarItemIdentifier,
-            NewProjectToolbarItemIdentifier];
-}
-
-- (CPArray)toolbarDefaultItemIdentifiers:(CPToolbar)aToolbar 
-{
-    return [HomeToolbarItemIdentifier,
-            CPToolbarSeparatorItemIdentifier,
-            ProjectsToolbarItemIdentifier,
-            NewProjectToolbarItemIdentifier];
-}
-
-- (CPToolbarItem)toolbar: (CPToolbar)aToolbar itemForItemIdentifier:(CPString)anItemIdentifier willBeInsertedIntoToolbar:(BOOL)aFlag {
-    var toolbarItem = [[CPToolbarItem alloc] initWithItemIdentifier: anItemIdentifier];
-    var mainBundle = [CPBundle mainBundle];
-    var iconSize = CPSizeMake(32,32);
-    
-    switch(anItemIdentifier) {
-    case HomeToolbarItemIdentifier:
-        var image = [[CPImage alloc] initWithContentsOfFile: [mainBundle pathForResource: "home.png"] size: iconSize];
-        [toolbarItem setImage: image];
-        [toolbarItem setTarget: self];
-        [toolbarItem setAction: @selector(goToYogoHome)];
-        [toolbarItem setLabel: "Yogo"];
-        [toolbarItem setMinSize:iconSize];
-        [toolbarItem setMaxSize:iconSize];
-        break;
-    case ProjectsToolbarItemIdentifier:
-        var image = [[CPImage alloc] initWithContentsOfFile: [mainBundle pathForResource: "list.png"] size: iconSize];
-        [toolbarItem setImage: image];
-        [toolbarItem setTarget: self];
-        [toolbarItem setAction: @selector(goToProjects)];
-        [toolbarItem setLabel: "Projects"];
-        [toolbarItem setMinSize:iconSize];
-        [toolbarItem setMaxSize:iconSize];
-        break;
-    case NewProjectToolbarItemIdentifier:
-        var image = [[CPImage alloc] initWithContentsOfFile: [mainBundle pathForResource: "add.png"] size: iconSize];
-        [toolbarItem setImage: image];
-        [toolbarItem setTarget: self];
-        [toolbarItem setAction: @selector(goToCreateProject)];
-        [toolbarItem setLabel: "Create"];
-        [toolbarItem setMinSize:iconSize];
-        [toolbarItem setMaxSize:iconSize];
-        break;
-    default:
-    }
-    
-    
-    return toolbarItem;
-}
 @end
