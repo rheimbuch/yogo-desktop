@@ -11,3 +11,15 @@ Requirements
     - jake sudo-install
 - Titanium SDK (Install Titanium Developer)
 - Python
+
+
+Building
+===========
+
+To see options:
+
+    $ rake -T
+
+To build & run on OSX:
+
+    $ rake yogo:desktop:osx:run
