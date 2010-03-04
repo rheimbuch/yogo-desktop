@@ -49,9 +49,9 @@ namespace :yogo do
 end
 
 
-TITANIUM_PATH = ENV['TITANIUM_PATH'] || CONFIG['titanium']['path'] || '/Library/Application\ Support/Titanium'
-TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || CONFIG['titanium']['version'] || '0.8.5'
-TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || CONFIG['titanium']['platform'] || 'osx'
+TITANIUM_PATH = ENV['TITANIUM_PATH'] || (CONFIG['titanium'] && CONFIG['titantium']['path']) || '/Library/Application\ Support/Titanium'
+TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || (CONFIG['titanium'] && CONFIG['titanium']['version']) || '0.8.5'
+TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || (CONFIG['titanium'] && CONFIG['titanium']['platform']) || 'osx'
 sdk = File.join(TITANIUM_PATH, 'sdk', TITANIUM_PLATFORM, TITANIUM_VERSION)
 build_script = File.join(sdk, 'tibuild.py')
 
@@ -65,7 +65,7 @@ end
 namespace :yogo do
   desc "Build/rebuild the Titanium Desktop app"
   namespace :desktop do
-    task :osx => ['yogo:ui:rebuild', 'yogo:desktop:clean', "dist/osx/YogoDesktop.app"]
+    task :osx => ['yogo:ui:rebuild', 'yogo:desktop:clean', File.join(DIST_PATH,'YogoDesktop.app')]
     
     task :clean do
       rm_rf "dist/*"
