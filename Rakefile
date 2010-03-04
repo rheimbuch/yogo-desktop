@@ -52,9 +52,11 @@ TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || 'osx'
 sdk = File.join(TITANIUM_PATH, 'sdk', TITANIUM_PLATFORM, TITANIUM_VERSION)
 build_script = File.join(sdk, 'tibuild.py')
 
-directory "dist/osx"
-file "dist/osx/YogoDesktop.app" => ['dist/osx', 'Resources/yogo_app', 'Resources/yogo'] do
-  sh "python #{build_script} -s #{TITANIUM_PATH} -a #{sdk} -p no -d dist/osx ."
+DIST_PATH = ENV['DIST_PATH'] || File.join('dist', TITANIUM_PLATFORM)
+
+directory DIST_PATH
+file File.join(DIST_PATH,'YogoDesktop.app') => [DIST_PATH, 'Resources/yogo_app', 'Resources/yogo'] do
+  sh "python #{build_script} -s #{TITANIUM_PATH} -a #{sdk} -p no -d #{DIST_PATH} ."
 end
 
 namespace :yogo do
