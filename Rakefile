@@ -1,7 +1,9 @@
 require 'rake/clean'
+require 'yaml'
 
 CLEAN.include("dist/*", "Resources/yogo", "Resources/yogo_app", "cappuccino/Build/*")
 
+CONFIG = File.exist?('build_options.yml') ? YAML.load_file('build_options.yml') : {}
 
 file "Resources/yogo_app" => "cappuccino/Build/yogo_app" do |t|
   cp_r "cappuccino/Build/yogo_app", "Resources/"
@@ -46,13 +48,14 @@ namespace :yogo do
   end
 end
 
-TITANIUM_PATH = ENV['TITANIUM_PATH'] || '/Library/Application\ Support/Titanium'
-TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || '0.8.5'
-TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || 'osx'
+
+TITANIUM_PATH = ENV['TITANIUM_PATH'] || CONFIG['titanium']['path'] || '/Library/Application\ Support/Titanium'
+TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || CONFIG['titanium']['version'] || '0.8.5'
+TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || CONFIG['titanium']['platform'] || 'osx'
 sdk = File.join(TITANIUM_PATH, 'sdk', TITANIUM_PLATFORM, TITANIUM_VERSION)
 build_script = File.join(sdk, 'tibuild.py')
 
-DIST_PATH = ENV['DIST_PATH'] || File.join('dist', TITANIUM_PLATFORM)
+DIST_PATH = ENV['DIST_PATH'] || CONFIG['dist'] || File.join('dist', TITANIUM_PLATFORM)
 
 directory DIST_PATH
 file File.join(DIST_PATH,'YogoDesktop.app') => [DIST_PATH, 'Resources/yogo_app', 'Resources/yogo'] do
