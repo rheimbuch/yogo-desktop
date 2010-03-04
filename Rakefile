@@ -49,7 +49,7 @@ namespace :yogo do
 end
 
 
-TITANIUM_PATH = ENV['TITANIUM_PATH'] || (CONFIG['titanium'] && CONFIG['titantium']['path']) || '/Library/Application\ Support/Titanium'
+TITANIUM_PATH = ENV['TITANIUM_PATH'] || (CONFIG['titanium'] && CONFIG['titanium']['path']) || '/Library/Application\ Support/Titanium'
 TITANIUM_VERSION = ENV['TITANIUM_VERSION'] || (CONFIG['titanium'] && CONFIG['titanium']['version']) || '0.8.5'
 TITANIUM_PLATFORM = ENV['TITANIUM_PLATFORM'] || (CONFIG['titanium'] && CONFIG['titanium']['platform']) || 'osx'
 sdk = File.join(TITANIUM_PATH, 'sdk', TITANIUM_PLATFORM, TITANIUM_VERSION)
