@@ -2,13 +2,13 @@
 @import <Foundation/CPNotificationCenter.j>
 @import "Server.j"
 
-YogoDatabaseSeededNotification = "YogoDatabaseSeededNotification";
+// YogoDatabaseSeededNotification = "YogoDatabaseSeededNotification";
 YogoProcessesStartedNotification = "YogoProcessesStartedNotification";
 YogoProcessManagerProgressNotification = "YogoProcessManagerProgressNotification";
 
 var ProgressValue = {
     'persvr_started': 33,
-    'db_seeded': 66,
+    // 'db_seeded': 66,
     'rails_started': 100
 };
 
@@ -21,7 +21,7 @@ var ProgressMax = 100;
     CPString    railsPort           @accessors(readonly);
     id          persvrServer        @accessors(readonly);
     CPString    persvrPort          @accessors(readonly);
-    boolean     databaseSeeded      @accessors(readonly);
+    // boolean     databaseSeeded      @accessors(readonly);
     double      progress            @accessors;
     CPString    message             @accessors;
 }
@@ -32,7 +32,7 @@ var ProgressMax = 100;
     if(self)
     {
         progress = 0;
-        databaseSeeded = false;
+        // databaseSeeded = false;
     
         CPLog("Finding open ports...");
         persvrPort = [self availablePort];
@@ -91,8 +91,6 @@ var ProgressMax = 100;
         progress = value;
     
     [self didChangeValueForKey:"progress"];
-    
-    
 
     [[CPNotificationCenter defaultCenter]
        postNotificationName:YogoProcessManagerProgressNotification
@@ -129,7 +127,6 @@ var ProgressMax = 100;
        }]];
 }
 
-
 @end
 
 @implementation YogoProcessManager (NotificationHandling)
@@ -160,11 +157,11 @@ var ProgressMax = 100;
         name:ServerStartedStatus
         object:persvrServer];
         
-    [[CPNotificationCenter defaultCenter]
-        addObserver:self
-        selector:@selector(databaseSeedFinished:)
-        name:YogoDatabaseSeededNotification
-        object:self];
+    // [[CPNotificationCenter defaultCenter]
+    //     addObserver:self
+    //     selector:@selector(databaseSeedFinished:)
+    //     name:YogoDatabaseSeededNotification
+    //     object:self];
 }
 
 - (void)persvrServerStarting:(CPNotification)notification
@@ -179,16 +176,17 @@ var ProgressMax = 100;
     [self setProgress:ProgressValue['persvr_started']];
     [self setMessage:"Database Started"];
     
-    [self seedDatabase];
-}
-
-- (void)databaseSeedFinished:(CPNotification)notification
-{
-    [self setProgress:ProgressValue['db_seeded']];
-    [self setMessage:"Data Loaded"];
-    
+    // [self sDatabase];
     [railsServer start];
 }
+
+// - (void)databaseSeedFinished:(CPNotification)notification
+// {
+//     [self setProgress:ProgressValue['db_seeded']];
+//     [self setMessage:"Data Loaded"];
+//     
+//     [railsServer start];
+// }
 
 - (void)railsServerStarting:(CPNotification)notification
 {
@@ -209,7 +207,6 @@ var ProgressMax = 100;
         postNotificationName:YogoProcessesStartedNotification
         object:self];
 }
-
 
 @end
 
@@ -240,69 +237,73 @@ var ProgressMax = 100;
     return port.toString();
 }
 
-- (void)seedDatabase
-{
-    [self incrementProgress:3];
-    var indicateDatabaseIsSeeded = function()
-    {
-        [self willChangeValueForKey:"databaseSeeded"];
-        databaseSeeded = true;
-        [self didChangeValueForKey:"databaseSeeded"];
-        [[CPNotificationCenter defaultCenter]
-                postNotificationName:YogoDatabaseSeededNotification
-                object:self];
-    };
-    
-    CPLog("Checking to see if yogo db needs to be seeded...")
-    [self setMessage:"Checking Database"];
-    [self incrementProgress];
-    var TFile = Titanium.Filesystem;
-    var yogoDbSeeded = TFile.getFile(TFile.getResourcesDirectory(), 'yogo_db_seeded');
-    if(!yogoDbSeeded.exists())
-    {
-        [self incrementProgress];
-        var dbSeedCmd = [];
-        dbSeedCmd.push('java', '-jar', Titanium.App.appURLToPath("app://jruby-complete-1.4.0.jar"));
-        dbSeedCmd.push('-S', 'rake', '-f', Titanium.App.appURLToPath("app://yogo/Rakefile"));
-        dbSeedCmd.push('db:seed');
-        dbSeedCmd.push('--trace');
-        
-        var dbSeed = Titanium.Process.createProcess({
-            args:dbSeedCmd,
-            env: {
-                'RAILS_ENV':'production',
-                'PERSVR_PORT':persvrPort
-            }
-        });
-        
-        dbSeed.setOnReadLine(function(line){
-            CPLog(line);
-        });
-        
-        [self incrementProgress];
-        
-        dbSeed.setOnExit(function(){
-            if(dbSeed.getExitCode() === 0)
-            {
-                CPLog("Finished seeding yogo db!")
-                yogoDbSeeded.write(Date.now());
-                indicateDatabaseIsSeeded();
-            }
-            else
-            {
-                CPLog.fatal("Seeding the Database Failed!");
-            }
-        });
-        CPLog("Seeding yogo db!");
-        [self setMessage:"Loading Initial Data..."];
-        [self incrementProgress];
-        dbSeed.launch();
-        [self incrementProgress];
-    }
-    else
-    {
-        CPLog("Yogo db already seeded!");
-        indicateDatabaseIsSeeded();
-    }
-}
+// - (void)seedDatabase
+// {
+//     [self incrementProgress:3];
+//     var indicateDatabaseIsSeeded = function()
+//     {
+//         [self willChangeValueForKey:"databaseSeeded"];
+//         databaseSeeded = true;
+//         [self didChangeValueForKey:"databaseSeeded"];
+//         [[CPNotificationCenter defaultCenter]
+//                 postNotificationName:YogoDatabaseSeededNotification
+//                 object:self];
+//     };
+//     
+//     CPLog("Checking to see if yogo db needs to be seeded...")
+//     [self setMessage:"Checking Database"];
+//     [self incrementProgress];
+//     var TFile = Titanium.Filesystem;
+//     var yogoDbSeeded = TFile.getFile(TFile.getResourcesDirectory(), 'yogo_db_seeded');
+//     if(!yogoDbSeeded.exists())
+//     {
+//         [self incrementProgress];
+//         var dbSeedCmd = [];
+//         dbSeedCmd.push('java', '-jar', Titanium.App.appURLToPath("app://jruby-complete-1.4.0.jar"));
+//         dbSeedCmd.push('-S', Titanium.App.appURLToPath("app://")'rake', '-f', Titanium.App.appURLToPath("app://yogo/Rakefile"));
+//         dbSeedCmd.push('db:seed');
+// //        dbSeedCmd.push('--trace');
+// 
+//         var dbSeedEnv = {};
+//         dbSeedEnv['RAILS_ENV'] = 'production';
+//         dbSeedEnv['PERSVR_PORT'] = persvrPort;
+//         
+//         var dbSeed = Titanium.Process.createProcess({args:dbSeedCmd, env:dbSeedEnv});
+//         
+//         dbSeed.setOnReadLine(function(line){
+//             [self setMessage:line]
+//             CPLog(line);
+//         });
+//         
+//         [self setMessage:"Command: "+dbSeed.toString()];
+//         [self setMessage:"Environment: "+Titanium.JSON.stringify(dbSeed.getEnvironment())];
+//         
+//         [self incrementProgress];
+//         
+//         dbSeed.setOnExit(function(){
+//             if(dbSeed.getExitCode() === 0)
+//             {
+//                 [self setMessage:"finished seed"]
+//                 CPLog("Finished seeding yogo db!")
+//                 yogoDbSeeded.write(Date.now());
+//                 indicateDatabaseIsSeeded();
+//             }
+//             else
+//             {
+//                 [self setMessage:"seed failed! exit code = " + dbSeed.getExitCode()]
+//                 CPLog.fatal("Seeding the Database Failed!");
+//             }
+//         });
+//         CPLog("Seeding yogo db!");
+//         [self setMessage:"Loading Initial Data..."];
+//         [self incrementProgress];
+//         dbSeed.launch();
+//         [self incrementProgress];
+//     }
+//     else
+//     {
+//         CPLog("Yogo db already seeded!");
+//         indicateDatabaseIsSeeded();
+//     }
+// }
 @end
